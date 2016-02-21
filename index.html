@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style type="text/css">
+		html {
+			font-size: 20px;
+		}
+		#content {
+			width: 100%;
+		}
+    </style>
+    <title>Socket.io</title>
+</head>
+
+<body>
+    <div id="content">
+        <div>
+            <div id="chat" class="collection flow-text" style="position: fixed;width: 100%;top: 0px;bottom: 100px;overflow: auto;">
+            </div>
+            <div class="row" style="bottom: 0px;position: fixed;width: 100%;">
+                <div class="input-field col s10">
+                    <input type="text" id="msg" class="validate" />
+                    <label for="msg">Message</label>
+                </div>
+                <a id="send" class="waves-effect waves-light btn-large col s2" style="bottom: 20px;position: absolute;">Send</a>
+            </div>
+        </div>
+    </div>
+    <script>
+    var socket = io.connect('http://localhost'); // 連線至伺服器
+    var id, name;
+    name = prompt('Input Your Name :', 'Peter');
+
+    socket.on('id',function(data){
+    	id = data;
+    });
+
+    socket.on('server', function(data) {
+        var userId = data.id,
+            userName = data.name,
+            msg = data.msg;
+        writeMsg(userId, userName, msg);
+
+    });
+
+    document.getElementById('send').addEventListener('click', function() {
+        sendHandle();
+    });
+    document.getElementById('msg').addEventListener('keyup', function(e) {
+        if (e.keyCode === 13) {
+            sendHandle();
+        }
+    });
+
+    function sendHandle() {
+        var msg = document.getElementById('msg').value;
+        socket.emit('client', {
+            name: name,
+            msg: msg
+        });
+    }
+
+    function writeMsg(userId, userName, msg) {
+        if (userId == id) {
+            document.getElementById('chat').insertAdjacentHTML('beforeEnd', "<a href='#!' class='collection-item' style='background-color: aliceblue;'><b>" + userName + ": </b>" + msg + "</a>");
+        } else {
+            document.getElementById('chat').insertAdjacentHTML('beforeEnd', "<a href='#!' class='collection-item'><b>" + userName + ": </b>" + msg + "</li>");
+        }
+        document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+        document.getElementById('msg').value = null;
+    }
+    </script>
+</body>
+
+</html>
